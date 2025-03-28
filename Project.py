@@ -96,9 +96,10 @@ app.layout = html.Div(id='main-div', children=[
      Output('bar-graph', 'figure')],
     [Input('interval-component', 'n_intervals'),
      Input('more-button', 'n_clicks'),
-     Input('theme-button', 'n_clicks')]
+     Input('theme-button', 'n_clicks'),
+     Input('process-table-container', 'n_clicks')]
 )
-def update_dashboard(n, more_clicks, theme_button_clicks):
+def update_dashboard(n, more_clicks, theme_button_clicks, kill_clicks):
     # Get system metrics
     cpu_usage = psutil.cpu_percent()
     memory_usage = psutil.virtual_memory().percent
@@ -155,8 +156,17 @@ def update_dashboard(n, more_clicks, theme_button_clicks):
     processes = sorted(processes, key=lambda x: x['cpu_percent'], reverse=True)
     
     limit = 20 if more_clicks == 0 else len(processes)
-    table_header = ["Process Name", "Process ID", "Memory Usage (%)", "CPU Usage (%)"]
-    table_rows = [[proc['name'], proc['pid'], f"{proc['memory_percent']:.2f}", f"{proc['cpu_percent']:.2f}"] for proc in processes[:limit]]
+    table_header = ["Process Name", "Process ID", "Memory Usage (%)", "CPU Usage (%)", "Action"]
+    table_rows = []
+    for proc in processes[:limit]:
+        proc_info = [
+            proc['name'], 
+            proc['pid'], 
+            f"{proc['memory_percent']:.2f}", 
+            f"{proc['cpu_percent']:.2f}",
+            html.Button('Kill', id=f"kill-{proc['pid']}", n_clicks=0, style={'backgroundColor': 'red', 'color': 'white', 'padding': '5px', 'border': 'none'})
+        ]
+        table_rows.append(proc_info)
     
     process_table = html.Table([ 
         html.Thead(html.Tr([html.Th(col, style={'padding': '10px', 'borderBottom': '2px solid white'}) for col in table_header])),
@@ -176,11 +186,10 @@ def update_dashboard(n, more_clicks, theme_button_clicks):
     scatter_fig.update_layout(title="Memory vs CPU Usage", xaxis_title="Memory Usage (%)", yaxis_title="CPU Usage (%)", plot_bgcolor=background_color, paper_bgcolor=background_color, font=dict(color=text_color))
     
     # Bar Graph (example: disk vs network usage)
-    bar_fig = go.Figure(data=[go.Bar(x=['Disk Usage', 'Network Usage'], y=[disk_usage, net_usage / (1024 * 1024)], marker=dict(color='#1E90FF'))])
-    bar_fig.update_layout(title="Disk vs Network Usage", xaxis_title="Category", yaxis_title="Usage (MB)", plot_bgcolor=background_color, paper_bgcolor=background_color, font=dict(color=text_color))
-    
+    bar_fig = go.Figure(data=[go.Bar(x=['Disk', 'Network'], y=[disk_usage, net_usage / (1024 * 1024)], marker=dict(color=['#1E90FF', '#8A2BE2']))])
+    bar_fig.update_layout(title="Disk vs Network Usage", xaxis_title="Resource", yaxis_title="Usage (MB)", plot_bgcolor=background_color, paper_bgcolor=background_color, font=dict(color=text_color))
+
     return cpu_fig, memory_fig, disk_fig, net_fig, process_table, pie_fig, hist_fig, scatter_fig, bar_fig
 
-# Run the app
 if __name__ == '__main__':
-    app.run(debug=True) in this improvemnet
+    app.run(debug=True)
