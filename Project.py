@@ -16,41 +16,42 @@ net_history = collections.deque(maxlen=30)
 
 # Layout
 app.layout = html.Div(id='main-div', children=[
+    # Header
     html.H1("Real-Time System Performance Dashboard", id="header", style={'color': '#FFD700', 'textAlign': 'center'}),
     
-    # Night Mode Toggle
-    dcc.Checklist(
-        id="theme-switch",
-        options=[{"label": "Night Mode", "value": "night"}],
-        value=[],  # No value by default, indicating light mode
-        style={"marginLeft": "50%", "transform": "translateX(-50%)", 'color': 'white'}
-    ),
+    # Dark Mode Button
+    html.Button("Dark Mode", id="theme-button", n_clicks=0, style={
+        "marginTop": "20px", "marginLeft": "50%", "transform": "translateX(-50%)",
+        'backgroundColor': '#444', 'color': 'white', 'padding': '10px', 'border': 'none'
+    }),
     
+    # Update interval
     dcc.Interval(id='interval-component', interval=2000, n_intervals=0),  # Update every 2 seconds
     
+    # Graph containers
     html.Div(style={'display': 'flex', 'justifyContent': 'space-around', 'flexWrap': 'wrap'}, children=[
         html.Div([
-            html.H3("CPU Usage", style={'color': '#00FF00'}),
+            html.H3("CPU Usage", style={'color': '#00FF00', 'textAlign': 'center'}),
             dcc.Graph(id='cpu-usage-graph')
         ], style={'width': '45%'}),
 
         html.Div([
-            html.H3("Memory Usage", style={'color': '#FF4500'}),
+            html.H3("Memory Usage", style={'color': '#FF4500', 'textAlign': 'center'}),
             dcc.Graph(id='memory-usage-graph')
         ], style={'width': '45%'}),
 
         html.Div([
-            html.H3("Disk Usage", style={'color': '#1E90FF'}),
+            html.H3("Disk Usage", style={'color': '#1E90FF', 'textAlign': 'center'}),
             dcc.Graph(id='disk-usage-graph')
         ], style={'width': '45%'}),
 
         html.Div([
-            html.H3("Network Activity", style={'color': '#8A2BE2'}),
+            html.H3("Network Activity", style={'color': '#8A2BE2', 'textAlign': 'center'}),
             dcc.Graph(id='net-usage-graph')
         ], style={'width': '45%'})
     ]),
 
-    html.H3("Running Processes", style={'color': '#FFD700', 'marginTop': '20px'}),
+    html.H3("Running Processes", style={'color': '#FFD700', 'marginTop': '20px', 'textAlign': 'center'}),
     html.Button("More", id="more-button", n_clicks=0, style={'marginBottom': '10px', 'padding': '10px', 'backgroundColor': '#444', 'color': 'white'}),
     html.Div(id='process-table-container'),
 
@@ -58,25 +59,25 @@ app.layout = html.Div(id='main-div', children=[
     html.Div(style={'display': 'flex', 'justifyContent': 'space-around', 'flexWrap': 'wrap', 'marginTop': '20px'}, children=[
         # Pie Chart
         html.Div([
-            html.H3("System Load Distribution", style={'color': '#FFD700'}),
+            html.H3("System Load Distribution", style={'color': '#FFD700', 'textAlign': 'center'}),
             dcc.Graph(id='pie-chart')
         ], style={'width': '45%'}),
 
         # Histogram
         html.Div([
-            html.H3("CPU Usage Distribution", style={'color': '#FFD700'}),
+            html.H3("CPU Usage Distribution", style={'color': '#FFD700', 'textAlign': 'center'}),
             dcc.Graph(id='histogram')
         ], style={'width': '45%'}),
 
         # Scatter Plot
         html.Div([
-            html.H3("Memory vs CPU Usage", style={'color': '#FFD700'}),
+            html.H3("Memory vs CPU Usage", style={'color': '#FFD700', 'textAlign': 'center'}),
             dcc.Graph(id='scatter-plot')
         ], style={'width': '45%'}),
 
         # Bar Graph
         html.Div([
-            html.H3("Disk vs Network Usage", style={'color': '#FFD700'}),
+            html.H3("Disk vs Network Usage", style={'color': '#FFD700', 'textAlign': 'center'}),
             dcc.Graph(id='bar-graph')
         ], style={'width': '45%'})
     ])
@@ -95,22 +96,27 @@ app.layout = html.Div(id='main-div', children=[
      Output('bar-graph', 'figure')],
     [Input('interval-component', 'n_intervals'),
      Input('more-button', 'n_clicks'),
-     Input('theme-switch', 'value')]
+     Input('theme-button', 'n_clicks')]
 )
-def update_dashboard(n, more_clicks, theme_value):
+def update_dashboard(n, more_clicks, theme_button_clicks):
     # Get system metrics
     cpu_usage = psutil.cpu_percent()
     memory_usage = psutil.virtual_memory().percent
     disk_usage = psutil.disk_usage('/').percent
     net_usage = psutil.net_io_counters().bytes_sent + psutil.net_io_counters().bytes_recv
     
-    # Define theme based on night mode toggle
-    if "night" in theme_value:
+    # Define theme based on button clicks
+    if theme_button_clicks % 2 == 1:
         background_color = "#1e1e1e"
         text_color = "white"
+        button_text = "Light Mode"
     else:
         background_color = "white"
         text_color = "black"
+        button_text = "Dark Mode"
+    
+    # Update button text dynamically
+    app.layout.children[1].children = button_text
     
     # Append new values to history
     cpu_history.append(cpu_usage)
@@ -177,4 +183,4 @@ def update_dashboard(n, more_clicks, theme_value):
 
 # Run the app
 if __name__ == '__main__':
-    app.run(debug=True) compare with this
+    app.run(debug=True) in this improvemnet
