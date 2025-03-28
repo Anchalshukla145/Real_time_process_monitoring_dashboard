@@ -111,15 +111,19 @@ def update_dashboard(n, more_clicks, theme_button_clicks, kill_clicks):
         background_color = "#1e1e1e"
         text_color = "white"
         button_text = "Light Mode"
+        table_bg_color = "#333"  # Dark background for table
+        table_text_color = "white"  # Light text for table
     else:
         background_color = "white"
         text_color = "black"
         button_text = "Dark Mode"
+        table_bg_color = "#fff"  # Light background for table
+        table_text_color = "black"  # Dark text for table
     
     # Update button text dynamically
     app.layout.children[1].children = button_text
     
-    # Append new values to history
+    # Update system metrics history
     cpu_history.append(cpu_usage)
     memory_history.append(memory_usage)
     disk_history.append(disk_usage)
@@ -169,8 +173,8 @@ def update_dashboard(n, more_clicks, theme_button_clicks, kill_clicks):
         table_rows.append(proc_info)
     
     process_table = html.Table([ 
-        html.Thead(html.Tr([html.Th(col, style={'padding': '10px', 'borderBottom': '2px solid white'}) for col in table_header])),
-        html.Tbody([html.Tr([html.Td(cell, style={'padding': '10px', 'borderBottom': '1px solid gray'}) for cell in row]) for row in table_rows])
+        html.Thead(html.Tr([html.Th(col, style={'padding': '10px', 'borderBottom': '2px solid white', 'color': text_color}) for col in table_header])),
+        html.Tbody([html.Tr([html.Td(cell, style={'padding': '10px', 'borderBottom': '1px solid gray', 'backgroundColor': table_bg_color, 'color': table_text_color}) for cell in row]) for row in table_rows])
     ], style={'width': '80%', 'margin': 'auto', 'borderCollapse': 'collapse', 'color': text_color})
     
     # Pie Chart (example: system load distribution)
@@ -190,6 +194,7 @@ def update_dashboard(n, more_clicks, theme_button_clicks, kill_clicks):
     bar_fig.update_layout(title="Disk vs Network Usage", xaxis_title="Resource", yaxis_title="Usage (MB)", plot_bgcolor=background_color, paper_bgcolor=background_color, font=dict(color=text_color))
 
     return cpu_fig, memory_fig, disk_fig, net_fig, process_table, pie_fig, hist_fig, scatter_fig, bar_fig
+
 
 if __name__ == '__main__':
     app.run(debug=True)
